@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 
 const CLIENT_ID = "YCUSnajluQMAHR32DnJhupUYJddjZQ";
-const REDIRECT_URI = "http://localhost:3000";
+const REDIRECT_URI = "https://tomcheng.github.io/allocation-reports";
 
 class App extends Component {
   render() {
