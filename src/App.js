@@ -11,7 +11,7 @@ const App = () => {
   useEffect(() => {
     console.log("make api call here.");
     axios.get(`${apiServer}v1/accounts`, {
-      headers: { Authorization: `Bearer ${accessToken}` }
+      headers: { Host: apiServer, Authorization: `Bearer ${accessToken}` }
     });
   }, []);
   return (
