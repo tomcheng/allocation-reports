@@ -11,7 +11,7 @@ import { formatMoney, formatPercent } from "./utils";
 const CLIENT_ID = "YCUSnajluQMAHR32DnJhupUYJddjZQ";
 const REDIRECT_URI = "https://tomcheng.github.io/allocation-reports";
 
-const { accessToken, apiServer } = getAuthorizationToken();
+const { accessToken, apiServer } = getAuthorizationToken() || {};
 
 const Container = styled.div`
   padding: 20px 30px;
