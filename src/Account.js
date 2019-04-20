@@ -29,19 +29,6 @@ const Account = ({ account, balance, positions, postTaxAdjustment }) => {
   return (
     <div key={account.number}>
       <Heading>{account.type}</Heading>
-      <Subheading>Positions</Subheading>
-      {positions.map(position => (
-        <Flex key={position.symbol}>
-          <span>{position.symbol}</span>
-          <span>
-            {formatMoney(position.currentMarketValue * postTaxAdjustment)}
-          </span>
-        </Flex>
-      ))}
-      <Flex>
-        <span>Cash</span>
-        <span>{formatMoney(balance.cash * postTaxAdjustment)}</span>
-      </Flex>
       <Subheading>Asset Classes</Subheading>
       <Flex>
         <span>Stocks</span>
@@ -54,6 +41,19 @@ const Account = ({ account, balance, positions, postTaxAdjustment }) => {
       <Flex>
         <span>Cash</span>
         <span>{formatPercent(cash / total)}</span>
+      </Flex>
+      <Subheading>Positions</Subheading>
+      {positions.map(position => (
+        <Flex key={position.symbol}>
+          <span>{position.symbol}</span>
+          <span>
+            {formatMoney(position.currentMarketValue * postTaxAdjustment)}
+          </span>
+        </Flex>
+      ))}
+      <Flex>
+        <span>Cash</span>
+        <span>{formatMoney(balance.cash * postTaxAdjustment)}</span>
       </Flex>
     </div>
   );

@@ -116,6 +116,21 @@ const App = () => {
         <input type="checkbox" checked={isPostTax} onChange={togglePostTax} />{" "}
         Adjust for post tax amounts
       </label>
+      <Subheading>Asset Classes</Subheading>
+      <Flex>
+        <span>Stocks</span>
+        <span>
+          {formatPercent((rrspStocks + nonRrspStocks) / overallTotal)}
+        </span>
+      </Flex>
+      <Flex>
+        <span>Bonds</span>
+        <span>{formatPercent((rrspBonds + nonRrspBonds) / overallTotal)}</span>
+      </Flex>
+      <Flex>
+        <span>Cash</span>
+        <span>{formatPercent((rrspCash + nonRrspCash) / overallTotal)}</span>
+      </Flex>
       <Subheading>Accounts</Subheading>
       {accounts.map(account => (
         <Flex key={account.number}>
@@ -138,21 +153,6 @@ const App = () => {
         >
           {formatMoney(overallTotal)}
         </span>
-      </Flex>
-      <Subheading>Asset Classes</Subheading>
-      <Flex>
-        <span>Stocks</span>
-        <span>
-          {formatPercent((rrspStocks + nonRrspStocks) / overallTotal)}
-        </span>
-      </Flex>
-      <Flex>
-        <span>Bonds</span>
-        <span>{formatPercent((rrspBonds + nonRrspBonds) / overallTotal)}</span>
-      </Flex>
-      <Flex>
-        <span>Cash</span>
-        <span>{formatPercent((rrspCash + nonRrspCash) / overallTotal)}</span>
       </Flex>
       {accounts.map(account => (
         <Account
