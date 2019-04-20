@@ -1,7 +1,23 @@
 import React from "react";
+import styled from "styled-components";
 import sumBy from "lodash/sumBy";
 import { BREAKDOWNS } from "./constants";
 import { formatMoney, formatPercent } from "./utils";
+
+const Subheading = styled.div`
+  font-weight: bold;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid #ddd;
+  margin-bottom: 5px;
+  margin-top: 10px;
+`;
+
+const Flex = styled.div`
+  display: flex;
+  justify-content: space-between;
+`;
 
 const Account = ({ account, balance, positions }) => {
   const stocks = sumBy(
@@ -18,16 +34,30 @@ const Account = ({ account, balance, positions }) => {
   return (
     <div key={account.number}>
       <h2>{account.type}</h2>
+      <Subheading>Positions</Subheading>
       {positions.map(position => (
-        <div key={position.symbol}>
-          {position.symbol}: {formatMoney(position.currentMarketValue)}
-        </div>
+        <Flex key={position.symbol}>
+          <span>{position.symbol}</span>
+          <span>{formatMoney(position.currentMarketValue)}</span>
+        </Flex>
       ))}
-      <div>Cash: {formatMoney(cash)}</div>
-      <div>Breakdown</div>
-      <div>Stocks: {formatPercent(stocks / total)}</div>
-      <div>Bonds: {formatPercent(bonds / total)}</div>
-      <div>Cash: {formatPercent(cash / total)}</div>
+      <Flex>
+        <span>Cash</span>
+        <span>{formatMoney(cash)}</span>
+      </Flex>
+      <Subheading>Breakdown</Subheading>
+      <Flex>
+        <span>Stocks</span>
+        <span>{formatPercent(stocks / total)}</span>
+      </Flex>
+      <Flex>
+        <span>Bonds</span>
+        <span>{formatPercent(bonds / total)}</span>
+      </Flex>
+      <Flex>
+        <span>Cash</span>
+        <span>{formatPercent(cash / total)}</span>
+      </Flex>
     </div>
   );
 };

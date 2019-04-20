@@ -17,6 +17,11 @@ const Container = styled.div`
   padding: 20px 30px;
 `;
 
+const Flex = styled.div`
+  display: flex;
+  justify-content: space-between;
+`;
+
 const App = () => {
   const [accounts, setAccounts] = useState(null);
   const [balances, setBalances] = useState({});
@@ -54,11 +59,23 @@ const App = () => {
     <Container>
       {isLoaded ? (
         <Fragment>
-          <h2>Overview</h2>
-          <div>Total: {formatMoney(overallTotal)}</div>
-          <div>Stocks: {formatPercent(overallStocks / overallTotal)}</div>
-          <div>Bonds: {formatPercent(overallBonds / overallTotal)}</div>
-          <div>Cash: {formatPercent(overallCash / overallTotal)}</div>
+          <h1>Overview</h1>
+          <Flex>
+            <span>Total</span>
+            <span>{formatMoney(overallTotal)}</span>
+          </Flex>
+          <Flex>
+            <span>Stocks</span>
+            <span>{formatPercent(overallStocks / overallTotal)}</span>
+          </Flex>
+          <Flex>
+            <span>Bonds</span>
+            <span>{formatPercent(overallBonds / overallTotal)}</span>
+          </Flex>
+          <Flex>
+            <span>Cash</span>
+            <span>{formatPercent(overallCash / overallTotal)}</span>
+          </Flex>
           {accounts.map(account => (
             <Account
               key={account.number}
