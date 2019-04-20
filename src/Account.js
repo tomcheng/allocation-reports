@@ -3,20 +3,11 @@ import styled from "styled-components";
 import sumBy from "lodash/sumBy";
 import { BREAKDOWNS } from "./constants";
 import { formatMoney, formatPercent } from "./utils";
+import { Flex, Subheading } from "./styleComponents";
 
-const Subheading = styled.div`
-  font-weight: bold;
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  border-bottom: 1px solid #ddd;
-  margin-bottom: 5px;
-  margin-top: 10px;
-`;
-
-const Flex = styled.div`
-  display: flex;
-  justify-content: space-between;
+const Heading = styled.h2`
+  margin-top: 30px;
+  margin-bottom: 10px;
 `;
 
 const Account = ({ account, balance, positions }) => {
@@ -33,7 +24,7 @@ const Account = ({ account, balance, positions }) => {
 
   return (
     <div key={account.number}>
-      <h2>{account.type}</h2>
+      <Heading>{account.type}</Heading>
       <Subheading>Positions</Subheading>
       {positions.map(position => (
         <Flex key={position.symbol}>
@@ -45,7 +36,7 @@ const Account = ({ account, balance, positions }) => {
         <span>Cash</span>
         <span>{formatMoney(cash)}</span>
       </Flex>
-      <Subheading>Breakdown</Subheading>
+      <Subheading>Asset Classes</Subheading>
       <Flex>
         <span>Stocks</span>
         <span>{formatPercent(stocks / total)}</span>

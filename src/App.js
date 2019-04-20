@@ -6,6 +6,7 @@ import { getAuthorizationToken } from "./authorization";
 import { getAccounts } from "./repository";
 import { BREAKDOWNS } from "./constants";
 import Account from "./Account";
+import { Flex, Subheading } from "./styleComponents";
 import { formatMoney, formatPercent } from "./utils";
 
 const CLIENT_ID = "YCUSnajluQMAHR32DnJhupUYJddjZQ";
@@ -17,9 +18,8 @@ const Container = styled.div`
   padding: 20px 30px;
 `;
 
-const Flex = styled.div`
-  display: flex;
-  justify-content: space-between;
+const Heading = styled.h1`
+  margin-top: 0;
 `;
 
 const App = () => {
@@ -59,11 +59,26 @@ const App = () => {
     <Container>
       {isLoaded ? (
         <Fragment>
-          <h1>Overview</h1>
-          <Flex>
-            <span>Total</span>
-            <span>{formatMoney(overallTotal)}</span>
+          <Heading>Overall</Heading>
+          <Subheading>Accounts</Subheading>
+          {accounts.map(account => (
+            <Flex key={account.number}>
+              <span>{account.type}</span>
+              <span>{formatMoney(balances[account.number].totalEquity)}</span>
+            </Flex>
+          ))}
+          <Flex style={{ justifyContent: "flex-end" }}>
+            <span
+              style={{
+                borderTop: "1px solid #666",
+                marginTop: 2,
+                paddingTop: 2
+              }}
+            >
+              {formatMoney(overallTotal)}
+            </span>
           </Flex>
+          <Subheading>Asset Classes</Subheading>
           <Flex>
             <span>Stocks</span>
             <span>{formatPercent(overallStocks / overallTotal)}</span>
