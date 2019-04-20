@@ -10,16 +10,20 @@ const Heading = styled.h2`
   margin-bottom: 10px;
 `;
 
-const Account = ({ account, balance, positions }) => {
-  const stocks = sumBy(
-    positions,
-    position => position.currentMarketValue * BREAKDOWNS[position.symbol].stocks
-  );
-  const bonds = sumBy(
-    positions,
-    position => position.currentMarketValue * BREAKDOWNS[position.symbol].bonds
-  );
-  const cash = balance.cash;
+const Account = ({ account, balance, positions, postTaxAdjustment }) => {
+  const stocks =
+    sumBy(
+      positions,
+      position =>
+        position.currentMarketValue * BREAKDOWNS[position.symbol].stocks
+    ) * postTaxAdjustment;
+  const bonds =
+    sumBy(
+      positions,
+      position =>
+        position.currentMarketValue * BREAKDOWNS[position.symbol].bonds
+    ) * postTaxAdjustment;
+  const cash = balance.cash * postTaxAdjustment;
   const total = stocks + bonds + cash;
 
   return (
@@ -29,12 +33,14 @@ const Account = ({ account, balance, positions }) => {
       {positions.map(position => (
         <Flex key={position.symbol}>
           <span>{position.symbol}</span>
-          <span>{formatMoney(position.currentMarketValue)}</span>
+          <span>
+            {formatMoney(position.currentMarketValue * postTaxAdjustment)}
+          </span>
         </Flex>
       ))}
       <Flex>
         <span>Cash</span>
-        <span>{formatMoney(cash)}</span>
+        <span>{formatMoney(balance.cash * postTaxAdjustment)}</span>
       </Flex>
       <Subheading>Asset Classes</Subheading>
       <Flex>
