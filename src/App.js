@@ -54,7 +54,7 @@ const App = () => {
     <Container>
       {isLoaded ? (
         <Fragment>
-          <div>Overall Breakdown</div>
+          <h2>Overview</h2>
           <div>Total: {formatMoney(overallTotal)}</div>
           <div>Stocks: {formatPercent(overallStocks / overallTotal)}</div>
           <div>Bonds: {formatPercent(overallBonds / overallTotal)}</div>
@@ -75,7 +75,6 @@ const App = () => {
           Authorize
         </a>
       )}
-      <div>v 0.0.4</div>
     </Container>
   );
 };

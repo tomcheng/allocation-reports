@@ -17,7 +17,7 @@ const Account = ({ account, balance, positions }) => {
 
   return (
     <div key={account.number}>
-      <div>{account.type}</div>
+      <h2>{account.type}</h2>
       {positions.map(position => (
         <div key={position.symbol}>
           {position.symbol}: {formatMoney(position.currentMarketValue)}

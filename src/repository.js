@@ -1,5 +1,6 @@
 import axios from "axios";
 import find from "lodash/find";
+import sortBy from "lodash/sortBy";
 
 export const getAccounts = async ({ accessToken, apiServer }) => {
   const getResource = resource =>
@@ -29,9 +30,19 @@ export const getAccounts = async ({ accessToken, apiServer }) => {
       balances[account.number] = find(balancesResp.data.combinedBalances, {
         currency: "CAD"
       });
-      positions[account.number] = positionsResp.data.positions;
+      positions[account.number] = sortBy(
+        positionsResp.data.positions,
+        position => -position.currentMarketValue
+      );
     })
   );
 
-  return { accounts, balances, positions };
+  return {
+    accounts: sortBy(
+      accounts,
+      account => -balances[account.number].totalEquity
+    ),
+    balances,
+    positions
+  };
 };
