@@ -4,6 +4,7 @@ import flatMap from "lodash/flatMap";
 import omitBy from "lodash/omitBy";
 import pickBy from "lodash/pickBy";
 import sumBy from "lodash/sumBy";
+import { useLocalStorage } from "./hooks";
 import { getAuthorizationToken } from "./authorization";
 import { getAccounts } from "./repository";
 import { BREAKDOWNS } from "./constants";
@@ -27,10 +28,10 @@ const Heading = styled.h1`
 `;
 
 const App = () => {
-  const [accounts, setAccounts] = useState(null);
-  const [balances, setBalances] = useState({});
-  const [positions, setPositions] = useState({});
-  const [isPostTax, setIsPostTax] = useState(false);
+  const [accounts, setAccounts] = useLocalStorage("__port-accounts__", null);
+  const [balances, setBalances] = useLocalStorage("__port-balances__", {});
+  const [positions, setPositions] = useLocalStorage("__port-positions__", {});
+  const [isPostTax, setIsPostTax] = useLocalStorage("__port-post-tax__", true);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -44,7 +45,9 @@ const App = () => {
       setAccounts(accounts);
     };
 
-    fetchData();
+    if (!accounts && accessToken) {
+      fetchData();
+    }
   }, []);
 
   if (!accounts) {
