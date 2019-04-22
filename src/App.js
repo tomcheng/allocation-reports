@@ -1,51 +1,67 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import styled from "styled-components";
 import flatMap from "lodash/flatMap";
+import flatten from "lodash/flatten";
 import omitBy from "lodash/omitBy";
 import pickBy from "lodash/pickBy";
 import sumBy from "lodash/sumBy";
+import uniq from "lodash/uniq";
 import { useLocalStorage } from "./hooks";
-import { getAuthorizationToken } from "./authorization";
-import { getAccounts } from "./repository";
+import { initializeAPI } from "./authorization";
+import { getAccounts, getSymbols } from "./repository";
 import { BREAKDOWNS } from "./constants";
 import Account from "./Account";
-import { Flex, Subheading } from "./styleComponents";
-import { formatMoney, formatPercent } from "./utils";
+import { Subheading } from "./styleComponents";
+import { formatMoney } from "./utils";
+import LineItem from "./LineItem";
 
 const CLIENT_ID = "YCUSnajluQMAHR32DnJhupUYJddjZQ";
 const REDIRECT_URI = "https://tomcheng.github.io/allocation-reports";
 
 const TAX_RATE = 20;
 
-const { accessToken, apiServer } = getAuthorizationToken() || {};
+initializeAPI();
 
 const Container = styled.div`
   padding: 20px 30px;
 `;
 
-const Heading = styled.h1`
-  margin-top: 0;
+const Options = styled.div`
+  text-align: right;
+`;
+
+const Total = styled.h1`
+  text-align: center;
+  margin-top: 20px;
+  margin-bottom: 20px;
 `;
 
 const App = () => {
+  const [isPostTax, setIsPostTax] = useLocalStorage("__port-post-tax__", true);
   const [accounts, setAccounts] = useLocalStorage("__port-accounts__", null);
   const [balances, setBalances] = useLocalStorage("__port-balances__", {});
   const [positions, setPositions] = useLocalStorage("__port-positions__", {});
-  const [isPostTax, setIsPostTax] = useLocalStorage("__port-post-tax__", true);
+  const [symbols, setSymbols] = useLocalStorage("__port-symbols__", {});
+  const [quotes, setQuotes] = useLocalStorage("__port-quotes__", {});
 
   useEffect(() => {
     const fetchData = async () => {
-      const { accounts, balances, positions } = await getAccounts({
-        accessToken,
-        apiServer
-      });
+      const { accounts, balances, positions } = await getAccounts();
 
+      const symbolIDs = uniq(
+        flatten(Object.values(positions)).map(position => position.symbolId)
+      );
+
+      const { symbols, quotes } = await getSymbols(symbolIDs);
+
+      setSymbols(symbols);
+      setQuotes(quotes);
       setPositions(positions);
       setBalances(balances);
       setAccounts(accounts);
     };
 
-    if (!accounts && accessToken) {
+    if (!accounts) {
       fetchData();
     }
   }, []);
@@ -114,49 +130,41 @@ const App = () => {
 
   return (
     <Container>
-      <Heading>Portfolio Allocations</Heading>
-      <label>
-        <input type="checkbox" checked={isPostTax} onChange={togglePostTax} />{" "}
-        Adjust for post tax amounts
-      </label>
-      <Subheading>Asset Classes</Subheading>
-      <Flex>
-        <span>Stocks</span>
-        <span>
-          {formatPercent((rrspStocks + nonRrspStocks) / overallTotal)}
-        </span>
-      </Flex>
-      <Flex>
-        <span>Bonds</span>
-        <span>{formatPercent((rrspBonds + nonRrspBonds) / overallTotal)}</span>
-      </Flex>
-      <Flex>
-        <span>Cash</span>
-        <span>{formatPercent((rrspCash + nonRrspCash) / overallTotal)}</span>
-      </Flex>
+      <Options>
+        <label>
+          <input type="checkbox" checked={isPostTax} onChange={togglePostTax} />{" "}
+          Adjust for post tax amounts
+        </label>
+      </Options>
+      <Total>{formatMoney(overallTotal)}</Total>
       <Subheading>Accounts</Subheading>
       {accounts.map(account => (
-        <Flex key={account.number}>
-          <span>{account.type}</span>
-          <span>
-            {formatMoney(
-              balances[account.number].totalEquity *
-                (account.type === "RRSP" ? postTaxAdjustment : 1)
-            )}
-          </span>
-        </Flex>
+        <LineItem
+          key={account.number}
+          label={account.type}
+          amount={
+            balances[account.number].totalEquity *
+            (account.type === "RRSP" ? postTaxAdjustment : 1)
+          }
+          total={overallTotal}
+        />
       ))}
-      <Flex style={{ justifyContent: "flex-end" }}>
-        <span
-          style={{
-            borderTop: "1px solid #666",
-            marginTop: 2,
-            paddingTop: 2
-          }}
-        >
-          {formatMoney(overallTotal)}
-        </span>
-      </Flex>
+      <Subheading>Asset Classes</Subheading>
+      <LineItem
+        label="Stocks"
+        amount={rrspStocks + nonRrspStocks}
+        total={overallTotal}
+      />
+      <LineItem
+        label="Bonds"
+        amount={rrspBonds + nonRrspBonds}
+        total={overallTotal}
+      />
+      <LineItem
+        label="Cash"
+        amount={rrspCash + nonRrspCash}
+        total={overallTotal}
+      />
       {accounts.map(account => (
         <Account
           key={account.number}
@@ -164,6 +172,8 @@ const App = () => {
           balance={balances[account.number]}
           positions={positions[account.number]}
           postTaxAdjustment={account.type === "RRSP" ? postTaxAdjustment : 1}
+          symbols={symbols}
+          quotes={quotes}
         />
       ))}
     </Container>

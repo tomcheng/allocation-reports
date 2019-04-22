@@ -2,8 +2,8 @@ import React from "react";
 import styled from "styled-components";
 import sumBy from "lodash/sumBy";
 import { BREAKDOWNS } from "./constants";
-import { formatMoney, formatPercent } from "./utils";
-import { Flex, Subheading } from "./styleComponents";
+import { Subheading } from "./styleComponents";
+import LineItem from "./LineItem";
 
 const Heading = styled.h2`
   margin-top: 30px;
@@ -30,31 +30,18 @@ const Account = ({ account, balance, positions, postTaxAdjustment }) => {
     <div key={account.number}>
       <Heading>{account.type}</Heading>
       <Subheading>Asset Classes</Subheading>
-      <Flex>
-        <span>Stocks</span>
-        <span>{formatPercent(stocks / total)}</span>
-      </Flex>
-      <Flex>
-        <span>Bonds</span>
-        <span>{formatPercent(bonds / total)}</span>
-      </Flex>
-      <Flex>
-        <span>Cash</span>
-        <span>{formatPercent(cash / total)}</span>
-      </Flex>
+      <LineItem label="Stocks" amount={stocks} total={total} />
+      <LineItem label="Bonds" amount={bonds} total={total} />
+      <LineItem label="Cash" amount={cash} total={total} />
       <Subheading>Positions</Subheading>
       {positions.map(position => (
-        <Flex key={position.symbol}>
-          <span>{position.symbol}</span>
-          <span>
-            {formatMoney(position.currentMarketValue * postTaxAdjustment)}
-          </span>
-        </Flex>
+        <LineItem
+          key={position.symbol}
+          label={position.symbol}
+          amount={position.currentMarketValue * postTaxAdjustment}
+          total={total - cash}
+        />
       ))}
-      <Flex>
-        <span>Cash</span>
-        <span>{formatMoney(balance.cash * postTaxAdjustment)}</span>
-      </Flex>
     </div>
   );
 };

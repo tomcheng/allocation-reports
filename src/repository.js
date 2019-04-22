@@ -1,19 +1,17 @@
 import axios from "axios";
 import find from "lodash/find";
 import sortBy from "lodash/sortBy";
+import { accessToken, apiServer } from "./authorization";
 
-export const getAccounts = async ({ accessToken, apiServer }) => {
-  const getResource = resource =>
-    axios.get(
-      `https://cors-anywhere.herokuapp.com/${apiServer}v1/${resource}`,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Access-Control-Allow-Origin": "*"
-        }
-      }
-    );
+const getResource = resource =>
+  axios.get(`https://cors-anywhere.herokuapp.com/${apiServer}v1/${resource}`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Access-Control-Allow-Origin": "*"
+    }
+  });
 
+export const getAccounts = async () => {
   const accountsResp = await getResource("accounts");
   const accounts = accountsResp.data.accounts;
 
@@ -45,4 +43,21 @@ export const getAccounts = async ({ accessToken, apiServer }) => {
     balances,
     positions
   };
+};
+
+export const getSymbols = async symbolIDs => {
+  const symbols = {};
+  const quotes = {};
+
+  const [symbolsResp, quotesResp] = await Promise.all([
+    getResource(`symbols?ids=${symbolIDs.join(",")}`),
+    getResource(`markets/quotes?ids=${symbolIDs.join(",")}`)
+  ]);
+
+  symbolIDs.forEach(id => {
+    symbols[id] = find(symbolsResp.data.symbols, { symbolId: id });
+    quotes[id] = find(quotesResp.data.quotes, { symbolId: id });
+  });
+
+  return { symbols, quotes };
 };
