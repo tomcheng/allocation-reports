@@ -133,7 +133,7 @@ const App = () => {
       <Options>
         <label>
           <input type="checkbox" checked={isPostTax} onChange={togglePostTax} />{" "}
-          Adjust for post tax amounts
+          Post tax amounts ({TAX_RATE}%)
         </label>
       </Options>
       <Total>{formatMoney(overallTotal)}</Total>
