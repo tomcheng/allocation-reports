@@ -2,8 +2,10 @@ import React, { useEffect } from "react";
 import styled from "styled-components";
 import flatMap from "lodash/flatMap";
 import flatten from "lodash/flatten";
+import map from "lodash/map";
 import omitBy from "lodash/omitBy";
 import pickBy from "lodash/pickBy";
+import sortBy from "lodash/sortBy";
 import sumBy from "lodash/sumBy";
 import uniq from "lodash/uniq";
 import { useLocalStorage } from "./hooks";
@@ -28,15 +30,10 @@ const Container = styled.div`
   padding: 20px 30px;
 `;
 
-const Options = styled.div`
-  display: flex;
-  justify-content: space-between;
-`;
-
 const Total = styled.h1`
-  text-align: center;
-  margin-top: 20px;
+  margin-top: 0;
   margin-bottom: 20px;
+  text-align: center;
 `;
 
 const App = () => {
@@ -109,6 +106,24 @@ const App = () => {
 
   const postTaxAdjustment = isPostTax ? 1 - TAX_RATE / 100 : 1;
 
+  const combinedPositions = {};
+  (accounts || []).forEach(account => {
+    const multiplier =
+      isPostTax && account.type === "RRSP" ? 1 - TAX_RATE / 100 : 1;
+    positions[account.number].forEach(position => {
+      combinedPositions[position.symbol] =
+        (combinedPositions[position.symbol] || 0) +
+        position.currentMarketValue * multiplier;
+    });
+  });
+  const combinedPositionsArr = sortBy(
+    map(combinedPositions, (value, symbol) => ({
+      value,
+      symbol
+    })),
+    "value"
+  ).reverse();
+
   const rrspStocks =
     sumBy(
       rrspPositions,
@@ -145,20 +160,12 @@ const App = () => {
 
   return (
     <Container>
-      <Options>
+      <div style={{ marginBottom: 20, textAlign: "center" }}>
         <label>
           <input type="checkbox" checked={isPostTax} onChange={togglePostTax} />{" "}
           Post tax ({TAX_RATE}%)
         </label>
-        <div>
-          {lastUpdated && (
-            <span>Last Updated {moment(lastUpdated).fromNow()}</span>
-          )}{" "}
-          <button type="button" onClick={handleRefresh}>
-            Refresh
-          </button>
-        </div>
-      </Options>
+      </div>
       <Total>{formatMoney(overallTotal)}</Total>
       <Subheading>Accounts</Subheading>
       {accounts.map(account => (
@@ -188,6 +195,15 @@ const App = () => {
         amount={rrspCash + nonRrspCash}
         total={overallTotal}
       />
+      <Subheading>Positions</Subheading>
+      {combinedPositionsArr.map(({ value, symbol }) => (
+        <LineItem
+          key={symbol}
+          label={symbol}
+          amount={value}
+          total={overallTotal - (rrspCash + nonRrspCash)}
+        />
+      ))}
       {accounts.map(account => (
         <Account
           key={account.number}
@@ -199,6 +215,14 @@ const App = () => {
           quotes={quotes}
         />
       ))}
+      <div style={{ marginTop: 40, textAlign: "center" }}>
+        {lastUpdated && (
+          <span>Last Updated {moment(lastUpdated).fromNow()}</span>
+        )}{" "}
+        <button type="button" onClick={handleRefresh}>
+          Refresh
+        </button>
+      </div>
     </Container>
   );
 };
