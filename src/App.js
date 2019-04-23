@@ -14,9 +14,9 @@ import { getAccounts, getSymbols } from "./repository";
 import { BREAKDOWNS } from "./constants";
 import Account from "./Account";
 import { Subheading } from "./styleComponents";
-import { formatMoney } from "./utils";
 import LineItem from "./LineItem";
 import moment from "moment";
+import MoneyAmount from "./MoneyAmount";
 
 const CLIENT_ID = "YCUSnajluQMAHR32DnJhupUYJddjZQ";
 const REDIRECT_URI = "https://tomcheng.github.io/allocation-reports";
@@ -27,7 +27,17 @@ const TAX_RATE = 20;
 initializeAPI();
 
 const Container = styled.div`
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+`;
+
+const Body = styled.div`
   padding: 20px 30px;
+  flex-grow: 1;
+  flex-shrink: 1;
+  overflow: auto;
 `;
 
 const Total = styled.h1`
@@ -36,8 +46,31 @@ const Total = styled.h1`
   text-align: center;
 `;
 
+const StyledButton = styled.button`
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: inherit;
+  line-height: inherit;
+  text-decoration: underline;
+`;
+
+const Footer = styled.div`
+  text-align: center;
+  padding: 20px 30px;
+  border-top: 1px solid #ccc;
+`;
+
+const FooterLabel = styled.label`
+  margin: 0 10px;
+`;
+
 const App = () => {
   const [isPostTax, setIsPostTax] = useLocalStorage("__port-post-tax__", true);
+  const [isRedacted, setIsRedacted] = useLocalStorage(
+    "__port-redacted__",
+    false
+  );
   const [lastUpdated, setLastUpdated] = useLocalStorage(
     "__port-last-updated__",
     null
@@ -86,6 +119,10 @@ const App = () => {
 
   const togglePostTax = () => {
     setIsPostTax(!isPostTax);
+  };
+
+  const toggleRedacted = () => {
+    setIsRedacted(!isRedacted);
   };
 
   const rrspAccountNumbers = (accounts || [])
@@ -160,69 +197,74 @@ const App = () => {
 
   return (
     <Container>
-      <div style={{ marginBottom: 20, textAlign: "center" }}>
-        <label>
+      <Body>
+        <Total>
+          <MoneyAmount amount={overallTotal} isRedacted={isRedacted} />
+        </Total>
+        <Subheading>Positions</Subheading>
+        {combinedPositionsArr.map(({ value, symbol }) => (
+          <LineItem
+            key={symbol}
+            label={symbol}
+            amount={value}
+            total={overallTotal - (rrspCash + nonRrspCash)}
+            isRedacted={isRedacted}
+          />
+        ))}
+        <Subheading>Asset Classes</Subheading>
+        <LineItem
+          label="Stocks"
+          amount={rrspStocks + nonRrspStocks}
+          total={overallTotal}
+          isRedacted={isRedacted}
+        />
+        <LineItem
+          label="Bonds"
+          amount={rrspBonds + nonRrspBonds}
+          total={overallTotal}
+          isRedacted={isRedacted}
+        />
+        <LineItem
+          label="Cash"
+          amount={rrspCash + nonRrspCash}
+          total={overallTotal}
+          isRedacted={isRedacted}
+        />
+        {accounts.map(account => (
+          <Account
+            key={account.number}
+            account={account}
+            balance={balances[account.number]}
+            positions={positions[account.number]}
+            postTaxAdjustment={account.type === "RRSP" ? postTaxAdjustment : 1}
+            symbols={symbols}
+            quotes={quotes}
+            isRedacted={isRedacted}
+          />
+        ))}
+        <div style={{ marginTop: 40, textAlign: "center" }}>
+          {lastUpdated && (
+            <span>Last updated {moment(lastUpdated).fromNow()}.</span>
+          )}{" "}
+          <StyledButton type="button" onClick={handleRefresh}>
+            Refresh
+          </StyledButton>
+        </div>
+      </Body>
+      <Footer>
+        <FooterLabel>
           <input type="checkbox" checked={isPostTax} onChange={togglePostTax} />{" "}
           Post tax ({TAX_RATE}%)
-        </label>
-      </div>
-      <Total>{formatMoney(overallTotal)}</Total>
-      <Subheading>Positions</Subheading>
-      {combinedPositionsArr.map(({ value, symbol }) => (
-        <LineItem
-          key={symbol}
-          label={symbol}
-          amount={value}
-          total={overallTotal - (rrspCash + nonRrspCash)}
-        />
-      ))}
-      <Subheading>Asset Classes</Subheading>
-      <LineItem
-        label="Stocks"
-        amount={rrspStocks + nonRrspStocks}
-        total={overallTotal}
-      />
-      <LineItem
-        label="Bonds"
-        amount={rrspBonds + nonRrspBonds}
-        total={overallTotal}
-      />
-      <LineItem
-        label="Cash"
-        amount={rrspCash + nonRrspCash}
-        total={overallTotal}
-      />
-      <Subheading>Accounts</Subheading>
-      {accounts.map(account => (
-        <LineItem
-          key={account.number}
-          label={account.type}
-          amount={
-            balances[account.number].totalEquity *
-            (account.type === "RRSP" ? postTaxAdjustment : 1)
-          }
-          total={overallTotal}
-        />
-      ))}
-      {accounts.map(account => (
-        <Account
-          key={account.number}
-          account={account}
-          balance={balances[account.number]}
-          positions={positions[account.number]}
-          postTaxAdjustment={account.type === "RRSP" ? postTaxAdjustment : 1}
-          symbols={symbols}
-          quotes={quotes}
-        />
-      ))}
-      <div style={{ marginTop: 40, textAlign: "center" }}>
-        {lastUpdated && (
-          <span>Last updated {moment(lastUpdated).fromNow()}</span>
-        )}{" "}
-        <button type="button" onClick={handleRefresh}>
-          Refresh
-        </button>
-      </div>
+        </FooterLabel>
+        <FooterLabel>
+          <input
+            type="checkbox"
+            checked={isRedacted}
+            onChange={toggleRedacted}
+          />{" "}
+          Redacted
+        </FooterLabel>
+      </Footer>
     </Container>
   );
 };

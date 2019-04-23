@@ -5,7 +5,7 @@ export const Subheading = styled.div`
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid #ccc;
   margin-bottom: 5px;
   margin-top: 15px;
 `;
@@ -13,6 +13,7 @@ export const Subheading = styled.div`
 export const Flex = styled.div`
   display: flex;
   justify-content: space-between;
+  align-items: center;
 `;
 
 export const SecondaryText = styled.div`
