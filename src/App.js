@@ -14,10 +14,12 @@ import Account from "./Account";
 import { Subheading } from "./styleComponents";
 import { formatMoney } from "./utils";
 import LineItem from "./LineItem";
+import moment from "moment";
 
 const CLIENT_ID = "YCUSnajluQMAHR32DnJhupUYJddjZQ";
 const REDIRECT_URI = "https://tomcheng.github.io/allocation-reports";
 
+const AUTHORIZATION_URL = `https://login.questrade.com/oauth2/authorize?client_id=${CLIENT_ID}&response_type=token&redirect_uri=${REDIRECT_URI}`;
 const TAX_RATE = 20;
 
 initializeAPI();
@@ -27,7 +29,8 @@ const Container = styled.div`
 `;
 
 const Options = styled.div`
-  text-align: right;
+  display: flex;
+  justify-content: space-between;
 `;
 
 const Total = styled.h1`
@@ -38,49 +41,57 @@ const Total = styled.h1`
 
 const App = () => {
   const [isPostTax, setIsPostTax] = useLocalStorage("__port-post-tax__", true);
+  const [lastUpdated, setLastUpdated] = useLocalStorage(
+    "__port-last-updated__",
+    null
+  );
   const [accounts, setAccounts] = useLocalStorage("__port-accounts__", null);
   const [balances, setBalances] = useLocalStorage("__port-balances__", {});
   const [positions, setPositions] = useLocalStorage("__port-positions__", {});
   const [symbols, setSymbols] = useLocalStorage("__port-symbols__", {});
   const [quotes, setQuotes] = useLocalStorage("__port-quotes__", {});
 
+  const fetchData = async () => {
+    const { accounts, balances, positions } = await getAccounts();
+
+    const symbolIDs = uniq(
+      flatten(Object.values(positions)).map(position => position.symbolId)
+    );
+
+    const { symbols, quotes } = await getSymbols(symbolIDs);
+
+    setSymbols(symbols);
+    setQuotes(quotes);
+    setPositions(positions);
+    setBalances(balances);
+    setAccounts(accounts);
+    setLastUpdated(new Date().getTime());
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      const { accounts, balances, positions } = await getAccounts();
-
-      const symbolIDs = uniq(
-        flatten(Object.values(positions)).map(position => position.symbolId)
-      );
-
-      const { symbols, quotes } = await getSymbols(symbolIDs);
-
-      setSymbols(symbols);
-      setQuotes(quotes);
-      setPositions(positions);
-      setBalances(balances);
-      setAccounts(accounts);
-    };
-
     if (!accounts) {
       fetchData();
     }
   }, []);
 
-  if (!accounts) {
-    return (
-      <a
-        href={`https://login.questrade.com/oauth2/authorize?client_id=${CLIENT_ID}&response_type=token&redirect_uri=${REDIRECT_URI}`}
-      >
-        Authorize
-      </a>
-    );
-  }
+  const handleRefresh = async () => {
+    try {
+      setAccounts(null);
+      await fetchData();
+    } catch (e) {
+      if (e.message.includes("401")) {
+        window.location.href = AUTHORIZATION_URL;
+      } else {
+        console.log(e);
+      }
+    }
+  };
 
   const togglePostTax = () => {
     setIsPostTax(!isPostTax);
   };
 
-  const rrspAccountNumbers = accounts
+  const rrspAccountNumbers = (accounts || [])
     .filter(account => account.type === "RRSP")
     .map(account => account.number);
   const rrspPositions = flatMap(
@@ -128,13 +139,25 @@ const App = () => {
     rrspCash +
     nonRrspCash;
 
+  if (!accounts) {
+    return <a href={AUTHORIZATION_URL}>Authorize</a>;
+  }
+
   return (
     <Container>
       <Options>
         <label>
           <input type="checkbox" checked={isPostTax} onChange={togglePostTax} />{" "}
-          Post tax amounts ({TAX_RATE}%)
+          Post tax ({TAX_RATE}%)
         </label>
+        <div>
+          {lastUpdated && (
+            <span>Last Updated {moment(lastUpdated).fromNow()}</span>
+          )}{" "}
+          <button type="button" onClick={handleRefresh}>
+            Refresh
+          </button>
+        </div>
       </Options>
       <Total>{formatMoney(overallTotal)}</Total>
       <Subheading>Accounts</Subheading>
