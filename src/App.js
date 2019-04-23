@@ -167,16 +167,13 @@ const App = () => {
         </label>
       </div>
       <Total>{formatMoney(overallTotal)}</Total>
-      <Subheading>Accounts</Subheading>
-      {accounts.map(account => (
+      <Subheading>Positions</Subheading>
+      {combinedPositionsArr.map(({ value, symbol }) => (
         <LineItem
-          key={account.number}
-          label={account.type}
-          amount={
-            balances[account.number].totalEquity *
-            (account.type === "RRSP" ? postTaxAdjustment : 1)
-          }
-          total={overallTotal}
+          key={symbol}
+          label={symbol}
+          amount={value}
+          total={overallTotal - (rrspCash + nonRrspCash)}
         />
       ))}
       <Subheading>Asset Classes</Subheading>
@@ -195,13 +192,16 @@ const App = () => {
         amount={rrspCash + nonRrspCash}
         total={overallTotal}
       />
-      <Subheading>Positions</Subheading>
-      {combinedPositionsArr.map(({ value, symbol }) => (
+      <Subheading>Accounts</Subheading>
+      {accounts.map(account => (
         <LineItem
-          key={symbol}
-          label={symbol}
-          amount={value}
-          total={overallTotal - (rrspCash + nonRrspCash)}
+          key={account.number}
+          label={account.type}
+          amount={
+            balances[account.number].totalEquity *
+            (account.type === "RRSP" ? postTaxAdjustment : 1)
+          }
+          total={overallTotal}
         />
       ))}
       {accounts.map(account => (
@@ -217,7 +217,7 @@ const App = () => {
       ))}
       <div style={{ marginTop: 40, textAlign: "center" }}>
         {lastUpdated && (
-          <span>Last Updated {moment(lastUpdated).fromNow()}</span>
+          <span>Last updated {moment(lastUpdated).fromNow()}</span>
         )}{" "}
         <button type="button" onClick={handleRefresh}>
           Refresh

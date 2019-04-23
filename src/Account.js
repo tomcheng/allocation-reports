@@ -50,10 +50,6 @@ const Account = ({ account, balance, positions, postTaxAdjustment }) => {
         <span>{formatMoney(total)}</span>
       </Heading>
       <AnimateHeight isExpanded={isExpanded}>
-        <Subheading>Asset Classes</Subheading>
-        <LineItem label="Stocks" amount={stocks} total={total} />
-        <LineItem label="Bonds" amount={bonds} total={total} />
-        <LineItem label="Cash" amount={cash} total={total} />
         <Subheading>Positions</Subheading>
         {positions.map(position => (
           <LineItem
@@ -63,6 +59,10 @@ const Account = ({ account, balance, positions, postTaxAdjustment }) => {
             total={total - cash}
           />
         ))}
+        <Subheading>Asset Classes</Subheading>
+        <LineItem label="Stocks" amount={stocks} total={total} />
+        <LineItem label="Bonds" amount={bonds} total={total} />
+        <LineItem label="Cash" amount={cash} total={total} />
       </AnimateHeight>
     </div>
   );
