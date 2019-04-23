@@ -34,7 +34,7 @@ const Container = styled.div`
 `;
 
 const Body = styled.div`
-  padding: 20px 30px;
+  padding: 30px 30px 20px;
   flex-grow: 1;
   flex-shrink: 1;
   overflow: auto;
@@ -53,11 +53,12 @@ const StyledButton = styled.button`
   font-size: inherit;
   line-height: inherit;
   text-decoration: underline;
+  background-color: transparent;
 `;
 
 const Footer = styled.div`
   text-align: center;
-  padding: 20px 30px;
+  padding: 15px 0;
   border-top: 1px solid #ccc;
 `;
 
@@ -243,9 +244,7 @@ const App = () => {
           />
         ))}
         <div style={{ marginTop: 40, textAlign: "center" }}>
-          {lastUpdated && (
-            <span>Last updated {moment(lastUpdated).fromNow()}.</span>
-          )}{" "}
+          {lastUpdated && <span>Updated {moment(lastUpdated).fromNow()}.</span>}{" "}
           <StyledButton type="button" onClick={handleRefresh}>
             Refresh
           </StyledButton>
