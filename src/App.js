@@ -42,7 +42,7 @@ const Body = styled.div`
 
 const Total = styled.h1`
   margin-top: 0;
-  margin-bottom: 20px;
+  margin-bottom: 30px;
   text-align: center;
 `;
 
